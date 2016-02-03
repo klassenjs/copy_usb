@@ -44,12 +44,15 @@ size_t filesize(char* filename) {
   
   if (fstat(fd, &st) == -1) {
     perror(__func__);
+    close(fd);
     return -1;
   }
 
   if(S_ISBLK(st.st_mode)) {
     ioctl(fd, BLKGETSIZE64, &(st.st_size));
   }
+
+  close(fd);
 
   return st.st_size;
 }
