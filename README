@@ -1,0 +1,78 @@
+This set of utilities was created to help automate my task of creating
+large numbers of USB sticks from a raw image file. However, they could
+potentially be useful for any mass USB drive duplication effort.
+
+These utilities were made to solve a specific problem for me.  As
+such, they get the job done, but not a lot of effort has been spent on
+user interface, error handling, or portability.
+
+CAUTION: Use these programs at your own risk!
+
+         These programs are designed to overwrite device files.  This
+         means that if there is an error, it could wipe out your
+         disks.
+
+The Programs
+============
+
+copy_usb
+--------
+
+Usage: ./copy_usb <source image> <destination device>
+
+Copies the source image to the destination device. After verifying
+the sizes match, it copies the blocks that differ between the source
+image and the destination device.  This is done to reduce the number
+of writes as it is assumed the destination is Flash media and as such
+writes are much slower than reads and writes reduce the device's
+lifetime.
+
+As a probably useless measure, copy_usb attempts to preserve the
+volume id stored in the partition table of the destination device.
+This means that there is an assumption of a DOS style partition table
+with the volume id located at bytes 0x1b8 - 0x1bc from the start of
+the device.
+
+As an additional precaution, the destination is opened O_EXCL which
+/should/ prevent the copying from taking place if the destination is
+mounted.  There are probably many ways this could fail, so don't rely
+on it.
+
+autostart
+---------
+
+Usage: ./autostart <source image>
+
+Automates copying the image to new USB devices as they are inserted.
+This attempts to save the hassle of inserting the USB device, figuring
+out what device node it came up under, then manually running
+`copy_usb` with that device name.
+
+WARNING: This program will cause any new USB device that matches the
+         image size to be immediately overwritten.
+
+This works by using inotify to watch the directory `/dev/disk/by-id`
+for new USB devices (identified by their name starting with `usb-`).
+If a new USB device is inserted that matches the image size,
+automatically starts:
+
+    ./copy_usb <source image> <new_device>
+
+NOTICE: autostart starts `./copy_usb`.  This means `copy_usb` must be
+        in the current directory when invoking `autostart` otherwise
+        it won't be found.
+
+Building
+========
+
+These programs were written to run under Debian Jessie.  They will
+likely work under other Linux distributions of a similar vintage, but
+I haven't tested any others.
+
+To build, you will need the standard development packages installed (C
+compiler, make, header files, etc).
+
+Build by running `make`.
+
+There is no installation, the programs run out of the source
+directory.
