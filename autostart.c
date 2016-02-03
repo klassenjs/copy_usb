@@ -67,7 +67,7 @@ void copy_usb(const char *src_name, const char *dst_name)
     return;
   } else if (pid == 0) {
     /* Child */
-    execl("./copy_usb", "./copy_usb", src_name, dst_name);
+    execl("./copy_usb", "./copy_usb", src_name, dst_name, NULL);
     /* Should never return unless error */
     perror(__func__);
     exit(1);
