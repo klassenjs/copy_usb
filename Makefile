@@ -1,7 +1,14 @@
 CPPFLAGS=-D_LARGEFILE64_SOURCE
-CFLAGS=-Os
+CFLAGS=-Os -g
 
-all: copy_usb autostart
+TARGETS=copy_usb autostart autostart-gui
 
+.PHONY: all
+all: $(TARGETS)
+
+autostart-gui: UserInterface.o
+autostart-gui: LDLIBS=-lfltk
+
+.PHONY: clean
 clean:
-	rm -f copy_usb autostart
+	rm -f *.o $(TARGETS)

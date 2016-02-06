@@ -62,6 +62,15 @@ NOTICE: autostart starts `./copy_usb`.  This means `copy_usb` must be
         in the current directory when invoking `autostart` otherwise
         it won't be found.
 
+
+autostart-gui
+-------------
+
+Usage: ./autostart-gui <source image>
+
+The same functionality as `autostart` except with a simple FLTK GUI
+with progress bars for each device with a copy in progress.
+
 Building
 ========
 

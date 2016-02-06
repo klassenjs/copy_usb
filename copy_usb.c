@@ -44,6 +44,19 @@ int main(int argc, char** argv)
 
 	void *src_buf, *dst_buf;
 
+	int simple_output = 0;
+
+	if (argc < 3 || argc > 4 ||
+	    ((argc == 4) && (strcmp("-b", argv[3]) != 0))) {
+	  fprintf(stderr, "Usage: %s <source> <destination> [-b]\n", argv[0]);
+	  fprintf(stderr, "       -b: Format progress output to be used with autostart\n");
+	  return (1);
+	}
+
+	if (argc == 4) {
+	  simple_output = 1;
+	}
+			
 	src_buf = malloc(BLOCKSIZE);
 	dst_buf = malloc(BLOCKSIZE);
 
@@ -67,7 +80,8 @@ int main(int argc, char** argv)
 	lseek(dst_fd, 0x1b8, SEEK_SET);
 	read(dst_fd, &vol_id, 4);
 	//vol_id = 0x3af1595d;
-	printf("Overwriting Volume ID: %x\n", vol_id);
+	if (!simple_output)
+	  printf("Overwriting Volume ID: %x\n", vol_id);
 
 	if(fstat(src_fd, &st) == -1) {
 		perror(argv[0]);
@@ -76,7 +90,8 @@ int main(int argc, char** argv)
 	if(S_ISBLK(st.st_mode)) {
 		ioctl(src_fd, BLKGETSIZE64, &(st.st_size));
 	}
-	printf("Source Length: %lld\n", st.st_size);	
+	if (!simple_output)
+	  printf("Source Length: %lld\n", st.st_size);
 
 	if(fstat(dst_fd, &dst_st) == -1) {
 		perror(argv[0]);
@@ -85,9 +100,10 @@ int main(int argc, char** argv)
 	if(S_ISBLK(dst_st.st_mode)) {
 		ioctl(dst_fd, BLKGETSIZE64, &(dst_st.st_size));
 	}
-	printf("Destination Length: %lld\n\n", dst_st.st_size);	
+	if (!simple_output)
+	  printf("Destination Length: %lld\n\n", dst_st.st_size);
 	if(dst_st.st_size < st.st_size) {
-		printf("Error: Destination not large enough for source\n.");
+		fprintf(stderr,"Error: Destination not large enough for source\n.");
 		return(3);
 	}
 
@@ -100,19 +116,19 @@ int main(int argc, char** argv)
 
 		len = read(src_fd, src_buf, BLOCKSIZE);
 		if(len < 0) {
-			perror(argv[0]);
-			return(4);
+		  perror(argv[0]);
+		  return(4);
 		}
 
 		len2 = read(dst_fd, dst_buf, len);
 		if(len2 != len) {
-			perror(argv[0]);
-			return(5);
+		  perror(argv[0]);
+		  return(5);
 		}
 		
 		if(memcmp(src_buf, dst_buf, len) != 0) {
-			lseek(dst_fd, offset, SEEK_SET);
-			write(dst_fd, src_buf, len);
+		  lseek(dst_fd, offset, SEEK_SET);
+		  write(dst_fd, src_buf, len);
 		}
 
 		/* Restore Volume ID */	
@@ -126,14 +142,14 @@ int main(int argc, char** argv)
 
 		len = read(src_fd, src_buf, BLOCKSIZE);
 		if(len < 0) {
-			perror(argv[0]);
-			return(6);
+		  perror(argv[0]);
+		  return(6);
 		}
 
 		len2 = read(dst_fd, dst_buf, len);
 		if(len2 != len) {
-			perror(argv[0]);
-			return(7);
+		  perror(argv[0]);
+		  return(7);
 		}
 		
 		if(memcmp(src_buf, dst_buf, len) != 0) {
@@ -142,12 +158,20 @@ int main(int argc, char** argv)
 		}
 
 		if(0 == (offset % (100*1024*1024))) {
-			printf("\033[1A\033[2K%d (%d %%)\n", offset/(1024*1024), (int)(100.0*offset/st.st_size));
-			fsync(dst_fd);
+		  if(simple_output) {
+		    printf("%d\n", (int)(100.0*offset/st.st_size));
+		    fflush(stdout);
+		  } else
+		    printf("\033[1A\033[2K%d (%d %%)\n", offset/(1024*1024), (int)(100.0*offset/st.st_size));
+		  fsync(dst_fd);
 		}
 	}
 
-	printf("\nSyncing...\n");
+	if(simple_output) {
+	  printf("E\n");
+	  fflush(stdout);
+	} else
+	  printf("\nSyncing...\n");
 	fsync(dst_fd);
 
 	close(src_fd);

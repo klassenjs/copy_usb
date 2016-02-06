@@ -1,3 +1,5 @@
 *~
+*.o
 autostart
+autostart-gui
 copy_usb
