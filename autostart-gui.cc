@@ -50,7 +50,7 @@ size_t filesize(char* filename) {
     perror(__func__);
     return -1;
   }
-  
+
   if (fstat(fd, &st) == -1) {
     perror(__func__);
     close(fd);
@@ -71,7 +71,7 @@ void copy_usb(const char *src_name, const char *dst_name)
 {
   pid_t pid;
   int pipefd[2];
-  
+
   printf("copy_usb %s %s\n", src_name, dst_name);
 
   if (pipe(pipefd)) {
@@ -80,7 +80,7 @@ void copy_usb(const char *src_name, const char *dst_name)
   }
 
   copy_params.ui->watch_fd(dst_name, pipefd[0]);
-  
+
   pid = fork();
   if (pid == -1) {
     perror(__func__);
@@ -100,14 +100,14 @@ int on_create(const struct inotify_event *evt, const char *src_name, const size_
 {
   char *dst_name;
   size_t dst_size;
-  
+
   if (evt->mask & IN_CREATE) {
     /* Check if USB device */
     printf("CREATE %s\n", evt->name);
     if (strncmp("usb-", evt->name, 4) == 0) {
       dst_name = (char*)alloca(strlen(dev_path) + strlen(evt->name) + 2);
       sprintf(dst_name, "%s/%s", dev_path, evt->name);
-      
+
       /* Check if correct size */
       if ((dst_size = filesize(dst_name)) == -1) {
 	perror(__func__);
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_NOCLDWAIT;
   sa.sa_restorer = NULL;
-  sigaction(SIGCHLD, &sa, NULL); 
+  sigaction(SIGCHLD, &sa, NULL);
 
   /* Respond to files created */
   UserInterface ui(argc, argv);
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
   copy_params.src_size = src_size;
   copy_params.ui = &ui;
 
-  Fl::add_fd(fd, FL_READ, cb_watch_inotify, (void*)&copy_params); 
+  Fl::add_fd(fd, FL_READ, cb_watch_inotify, (void*)&copy_params);
 
   return Fl::run();
 }
