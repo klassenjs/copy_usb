@@ -134,24 +134,34 @@ void cb_watch_inotify(int fd, void* v)
   on_create(evt, cp->src_name, cp->src_size);
 }
 
+int cb_fl_args(int argc, char** argv, int &i)
+{
+  char *fname = argv[i];
+  if ((access(fname, R_OK) == 0) && (copy_params.src_name == NULL)) {
+    copy_params.src_name = fname;
+    i++;
+    return 1;
+  }
+  return 0;
+}
+
 int main(int argc, char** argv)
 {
   int fd, i;
-  size_t src_size;
-  size_t dst_size;
   struct sigaction sa;
   int* watches;
-  
-  /* Read source file */
-  if (argc != 2) {
+
+  memset(&copy_params, 0, sizeof(copy_params));
+  if ((Fl::args(argc, argv, i, cb_fl_args) != argc) ||
+      (copy_params.src_name == NULL)) {
     printf("Usage: %s <image to copy>\n", argv[0]);
     return 1;
   }
 
-  if ((src_size = filesize(argv[1])) == -1) {
+  if ((copy_params.src_size = filesize(copy_params.src_name)) == -1) {
     return -1;
   }
-  printf("Source Length: %lld\n", src_size);
+  printf("Source Length: %lld\n", copy_params.src_size);
 
   /* Create inotify watchlist for files created in /dev/disk/by-id */
 
@@ -177,8 +187,6 @@ int main(int argc, char** argv)
   /* Respond to files created */
   UserInterface ui(argc, argv);
 
-  copy_params.src_name = argv[1];
-  copy_params.src_size = src_size;
   copy_params.ui = &ui;
 
   Fl::add_fd(fd, FL_READ, cb_watch_inotify, (void*)&copy_params);
