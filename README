@@ -68,8 +68,9 @@ autostart-gui
 
 Usage: ./autostart-gui <source image>
 
-The same functionality as `autostart` except with a simple FLTK GUI
-with progress bars for each device with a copy in progress.
+The same functionality as `autostart` except with a simple FLTK
+(http://www.fltk.org) GUI with progress bars for each device with a
+copy in progress.
 
 Building
 ========
