@@ -20,7 +20,7 @@ void UserInterface::cb_watch_fd(int fd, void* v) {
   float f;
   char *pos = buf;
   char *end = pos + 29;
-  
+
   while ((read(fd, pos, 1) > 0) && (*pos != '\n') && (pos != end)) {
     pos++;
   }
@@ -29,7 +29,7 @@ void UserInterface::cb_watch_fd(int fd, void* v) {
     Fl::remove_fd(fd);
     Fl::delete_widget(p);
     return;
-  }	
+  }
 
   sscanf(buf, "%f\n", &f);
 
@@ -40,7 +40,7 @@ UserInterface::UserInterface(int argc, char** argv) {
   { m_window = new Fl_Double_Window(440, 415, "Copy USB");
     m_window->user_data((void*)(this));
     { m_pack = new Fl_Pack(0, 20, 440, 360, "Active Copies");
-      
+
       m_pack->end();
     } // Fl_Pack* m_pack
     { m_btn_quit = new Fl_Button(380, 385, 55, 25, "Quit");
@@ -49,7 +49,7 @@ UserInterface::UserInterface(int argc, char** argv) {
     m_window->end();
   } // Fl_Double_Window* m_window
 
-	m_window->show(argc, argv);
+  m_window->show(argc, argv);
 }
 
 Fl_Progress* UserInterface::add_progress_bar(const char *name)
