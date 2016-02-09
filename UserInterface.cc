@@ -27,13 +27,17 @@ void UserInterface::cb_watch_fd(int fd, void* v) {
 
   if (buf[0] == 'E') {
     Fl::remove_fd(fd);
+    p->hide();
+    if(p->parent()) {
+      p->parent()->remove(p);
+    }
     Fl::delete_widget(p);
-    return;
+  } else {
+    // Read line as percent complete
+    sscanf(buf, "%f\n", &f);
+    p->value(f);
   }
-
-  sscanf(buf, "%f\n", &f);
-
-  p->value(f);
+  return;
 }
 
 UserInterface::UserInterface(int argc, char** argv) {
