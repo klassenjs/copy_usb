@@ -27,8 +27,7 @@ void UserInterface::cb_watch_fd(int fd, void* v) {
 
   if (buf[0] == 'E') {
     Fl::remove_fd(fd);
-    p->hide();
-    delete p;
+    Fl::delete_widget(p);
     return;
   }	
 
